@@ -1,38 +1,38 @@
 package com.example.avaliacao.handlers;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
 
+import com.example.avaliacao.exceptions.DadosInvalidosException;
 import com.example.avaliacao.exceptions.EmailJaExisteException;
 import com.example.avaliacao.exceptions.NaoEncontradoException;
 
 @ControllerAdvice
 public class ExceptionHandlers {
 	
-    // 1. Trata o erro 404 (Tanto para Cliente não encontrado quanto para Produto)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    @ResponseBody
+    // 1. Trata o erro 404 (Registro não encontrado)
     @ExceptionHandler(NaoEncontradoException.class)
-    public String recursoNaoEncontrado(NaoEncontradoException ex) {
-        return ex.getMessage();
+    public ResponseEntity<String> recursoNaoEncontrado(NaoEncontradoException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
 	
-    // 2. Trata o erro 409 (Quando tenta cadastrar um Cliente com e-mail repetido)
-    @ResponseStatus(HttpStatus.CONFLICT)
-    @ResponseBody
+    // 2. Trata o erro 400 (Dados Inválidos - REQUISITO DO PROFESSOR)
+    @ExceptionHandler(DadosInvalidosException.class)
+    public ResponseEntity<String> dadosInvalidos(DadosInvalidosException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+
+    // 3. Trata o erro 409 (E-mail repetido)
     @ExceptionHandler(EmailJaExisteException.class)
-    public String emailJaExiste(EmailJaExisteException ex) {
-        return ex.getMessage();
+    public ResponseEntity<String> emailJaExiste(EmailJaExisteException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
 	
-    // 3. Trata qualquer outro erro inesperado do sistema (Erro 500)
-   // @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-   // @ResponseBody
-    //@ExceptionHandler(Exception.class)
-    //public String excecaoGeral(Exception ex) {
-       // return "Ocorreu um erro interno no servidor: " + ex.getMessage();
-    //}
+    // 4. Trata qualquer outro erro inesperado do sistema (Erro 500)
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<String> excecaoGeral(Exception ex) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Ocorreu um erro interno no servidor: " + ex.getMessage());
+    }
 }
